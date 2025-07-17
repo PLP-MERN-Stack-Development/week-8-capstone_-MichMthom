@@ -1,52 +1,75 @@
-# MERN Stack Capstone Project
+const express = require('express');
+const mongoose = require('mongoose');
 
-This assignment focuses on designing, developing, and deploying a comprehensive full-stack MERN application that showcases all the skills you've learned throughout the course.
+mongoose.connect('mongodb:                                                                         
 
-## Assignment Overview
+const Todo = mongoose.model('//localhost/todos', { useNewUrlParser: true, useUnifiedTopology: true });
 
-You will:
-1. Plan and design a full-stack MERN application
-2. Develop a robust backend with MongoDB, Express.js, and Node.js
-3. Create an interactive frontend with React.js
-4. Implement testing across the entire application
-5. Deploy the application to production
+const Todo = mongoose.model('Todo', {
+  title: String,
+  description: String,
+  completed: Boolean
+});
 
-## Getting Started
+const app = express();
 
-1. Accept the GitHub Classroom assignment
-2. Clone the repository to your local machine
-3. Follow the instructions in the `Week8-Assignment.md` file
-4. Plan, develop, and deploy your capstone project
+app.get('/todos', async (req, res) => {
+  const todos = await Todo.find();
+  res.json(todos);
+});
 
-## Files Included
+app.post('/todos', async (req, res) => {
+  const todo = new Todo(req.body);
+  await todo.save();
+  res.json(todo);
+});
 
-- `Week8-Assignment.md`: Detailed assignment instructions
+// ...
+import React, { useState, useEffect } from 'react';
+import axios from 'axios';
 
-## Requirements
+function TodoList() {
+  const [todos, setTodos] = useState([]);
 
-- Node.js (v18 or higher)
-- MongoDB (local installation or Atlas account)
-- npm or yarn
-- Git and GitHub account
-- Accounts on deployment platforms (Render/Vercel/Netlify/etc.)
+  useEffect(() => {
+    axios.get('/todos')
+      .then(response => {
+        setTodos(response.data);
+      })
+      .catch(error => {
+        console.error(error);
+      });
+  }, []);
 
-## Project Ideas
+  return (
+    <ul>
+      {todos.map(todo => (
+        <li key={todo._id}>{todo.title}</li>
+      ))}
+    </ul>
+  );
+}
 
-The `Week8-Assignment.md` file includes several project ideas, but you're encouraged to develop your own idea that demonstrates your skills and interests.
+function TodoForm() {
+  const [title, setTitle] = useState('');
+  const [description, setDescription] = useState('');
 
-## Submission
+  const handleSubmit = (event) => {
+    event.preventDefault();
+    axios.post('/todos', { title, description })
+      .then(response => {
+        console.log(response.data);
+      })
+      .catch(error => {
+        console.error(error);
+      });
+  };
 
-Your project will be automatically submitted when you push to your GitHub Classroom repository. Make sure to:
-
-1. Commit and push your code regularly
-2. Include comprehensive documentation
-3. Deploy your application and add the live URL to your README.md
-4. Create a video demonstration and include the link in your README.md
-
-## Resources
-
-- [MongoDB Documentation](https://docs.mongodb.com/)
-- [Express.js Documentation](https://expressjs.com/)
-- [React Documentation](https://react.dev/)
-- [Node.js Documentation](https://nodejs.org/en/docs/)
-- [GitHub Classroom Guide](https://docs.github.com/en/education/manage-coursework-with-github-classroom) 
+  return (
+    <form onSubmit={handleSubmit}>
+      <input type="text" value={title} onChange={(event) => setTitle(event.target.value)} />
+      <textarea value={description} onChange={(event) => setDescription(event.target.value)} />
+      <button type="submit">Create Todo</button>
+    </form>
+  );
+}
